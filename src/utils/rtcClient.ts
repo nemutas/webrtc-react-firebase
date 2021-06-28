@@ -2,6 +2,7 @@
 // 公開されているStunServer：http://www.stunprotocol.org/
 export class RTCClient {
 	rtcPeerConection;
+	mediaStream: MediaStream | null;
 	private _localPeerName;
 	private _remotePeerName;
 
@@ -10,6 +11,9 @@ export class RTCClient {
 			iceServers: [{ urls: 'stun:stun.stunprotocol.org' }]
 		};
 		this.rtcPeerConection = new RTCPeerConnection(config);
+
+		this.mediaStream = null;
+
 		this._localPeerName = '';
 		this._remotePeerName = '';
 	}
@@ -34,5 +38,14 @@ export class RTCClient {
 
 	setRtcClient() {
 		this._setRtcCliant(this);
+	}
+
+	async getUserMedia() {
+		try {
+			const constraints = { audio: true, video: true };
+			this.mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+		} catch (err) {
+			console.error(err);
+		}
 	}
 }
