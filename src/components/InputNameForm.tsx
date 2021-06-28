@@ -2,20 +2,26 @@ import React, { useState } from 'react';
 import {
 	Box, Button, Container, CssBaseline, Link, makeStyles, TextField, Typography
 } from '@material-ui/core';
+import { RTCClient } from '../utils/rtcClient';
 
 type InputNameFormPropsType = {
-	label: string;
-	setPeerName: React.Dispatch<React.SetStateAction<string>>;
+	isLocal: boolean;
+	rtcClient: RTCClient;
 };
 
 export const InputNameForm: React.FC<InputNameFormPropsType> = props => {
-	const { label, setPeerName } = props;
+	const { isLocal, rtcClient } = props;
 	const classes = useStyles();
 	const [name, setName] = useState('');
+	const label = isLocal ? 'あなたの名前' : '相手の名前';
 
 	const onClickSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		e.preventDefault();
-		setPeerName(name.trim());
+		if (isLocal) {
+			rtcClient.localPeerName = name.trim();
+		} else {
+			rtcClient.remotePeerName = name.trim();
+		}
 		setName('');
 	};
 

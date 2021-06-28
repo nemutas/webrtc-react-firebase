@@ -7,9 +7,9 @@ type VideoLocalPropsType = {
 
 export const VideoLocal: React.FC<VideoLocalPropsType> = ({ localPeerName }) => {
 	const videoRef = useRef<HTMLVideoElement>(null);
-	const currentVideoRef = videoRef.current;
 
 	useEffect(() => {
+		const currentVideoRef = videoRef.current;
 		if (!currentVideoRef) return;
 
 		const getMedia = async () => {
@@ -22,7 +22,7 @@ export const VideoLocal: React.FC<VideoLocalPropsType> = ({ localPeerName }) => 
 			}
 		};
 		getMedia();
-	}, [currentVideoRef]);
+	}, [videoRef]);
 
 	return <Video isMuted={true} name={localPeerName} videoRef={videoRef} />;
 };

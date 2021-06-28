@@ -1,26 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import { useRtcClient } from './hooks/useRtcClient';
 import { InputNameForm } from './InputNameForm';
 import { VideoArea } from './VideoArea';
 
 export const App: React.FC = () => {
-	const [localPeerName, setLocalPeerName] = useState('');
-	const [remotePeerName, setRemotePeerName] = useState('');
+	const rtcClient = useRtcClient();
 
 	// 開発時のみ
-	useEffect(() => {
-		setLocalPeerName('User1 Local');
-		setRemotePeerName('User2 Remote');
-	}, []);
+	// useEffect(() => {
+	// 	if (rtcClient) {
+	// 		rtcClient.localPeerName = 'User1 Local';
+	// 		rtcClient.remotePeerName = 'User2 Local';
+	// 	}
+	// }, [rtcClient]);
 
 	return (
 		<>
-			{!localPeerName ? (
-				<InputNameForm label="あなたの名前" setPeerName={setLocalPeerName} />
-			) : !remotePeerName ? (
-				<InputNameForm label="相手の名前" setPeerName={setRemotePeerName} />
-			) : (
-				<VideoArea localPeerName={localPeerName} remotePeerName={remotePeerName} />
-			)}
+			{rtcClient &&
+				(!rtcClient.localPeerName ? (
+					<InputNameForm isLocal={true} rtcClient={rtcClient} />
+				) : !rtcClient.remotePeerName ? (
+					<InputNameForm isLocal={false} rtcClient={rtcClient} />
+				) : (
+					<VideoArea rtcClient={rtcClient} />
+				))}
 		</>
 	);
 };

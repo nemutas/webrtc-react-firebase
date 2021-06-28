@@ -1,26 +1,25 @@
 import React from 'react';
 import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { RTCClient } from '../utils/rtcClient';
 import { VideoLocal } from './VideoLocal';
 import { VideoRemote } from './VideoRemote';
 
 type VideoAreaPropsType = {
-	localPeerName: string;
-	remotePeerName: string;
+	rtcClient: RTCClient;
 };
 
-export const VideoArea: React.FC<VideoAreaPropsType> = props => {
-	const { localPeerName, remotePeerName } = props;
+export const VideoArea: React.FC<VideoAreaPropsType> = ({ rtcClient }) => {
 	const classes = useStyles();
 
 	return (
 		<div className={classes.root}>
 			<Grid container spacing={3}>
 				<Grid item xs={12} sm={6}>
-					<VideoLocal localPeerName={localPeerName} />
+					<VideoLocal localPeerName={rtcClient.localPeerName} />
 				</Grid>
 				<Grid item xs={12} sm={6}>
-					<VideoRemote remotePeerName={remotePeerName} />
+					<VideoRemote remotePeerName={rtcClient.remotePeerName} />
 				</Grid>
 			</Grid>
 		</div>
