@@ -1,23 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { InputNameForm } from './InputNameForm';
-
-const getMedia = async () => {
-	const constraints = { audio: true, video: true };
-
-	try {
-		return await navigator.mediaDevices.getUserMedia(constraints);
-		/* ストリームを使用 */
-	} catch (err) {
-		/* エラーを処理 */
-		console.error(err);
-	}
-};
-
-getMedia();
+import { VideoArea } from './VideoArea';
 
 export const App: React.FC = () => {
 	const [localPeerName, setLocalPeerName] = useState('');
 	const [remotePeerName, setRemotePeerName] = useState('');
+
+	// 開発時のみ
+	useEffect(() => {
+		setLocalPeerName('User1 Local');
+		setRemotePeerName('User2 Remote');
+	}, []);
 
 	return (
 		<>
@@ -26,7 +19,7 @@ export const App: React.FC = () => {
 			) : !remotePeerName ? (
 				<InputNameForm label="相手の名前" setPeerName={setRemotePeerName} />
 			) : (
-				<div>Hello!</div>
+				<VideoArea localPeerName={localPeerName} remotePeerName={remotePeerName} />
 			)}
 		</>
 	);
