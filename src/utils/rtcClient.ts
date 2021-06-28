@@ -48,4 +48,10 @@ export class RTCClient {
 			console.error(err);
 		}
 	}
+
+	startListening(localPeerName: string) {
+		this._localPeerName = localPeerName;
+		this.setRtcClient();
+		// TODO: ここにシグナリングサーバーをリスンする処理を追加する
+	}
 }

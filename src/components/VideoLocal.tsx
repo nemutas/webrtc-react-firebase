@@ -12,16 +12,9 @@ export const VideoLocal: React.FC<VideoLocalPropsType> = ({ rtcClient }) => {
 
 	useEffect(() => {
 		const currentVideoRef = videoRef.current;
-		if (!currentVideoRef) return;
-
-		const getMedia = () => {
-			try {
-				currentVideoRef.srcObject = mediaStream;
-			} catch (err) {
-				console.error(err);
-			}
-		};
-		getMedia();
+		if (currentVideoRef) {
+			currentVideoRef.srcObject = mediaStream;
+		}
 	}, [mediaStream, videoRef]);
 
 	return <Video isMuted={true} name={rtcClient.localPeerName} videoRef={videoRef} />;

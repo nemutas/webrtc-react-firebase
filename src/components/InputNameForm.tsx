@@ -18,7 +18,7 @@ export const InputNameForm: React.FC<InputNameFormPropsType> = props => {
 	const onClickSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		e.preventDefault();
 		if (isLocal) {
-			rtcClient.localPeerName = name.trim();
+			rtcClient.startListening(name.trim());
 		} else {
 			rtcClient.remotePeerName = name.trim();
 		}
