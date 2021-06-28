@@ -1,33 +1,21 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useRtcClient } from './hooks/useRtcClient';
 import { InputNameForm } from './InputNameForm';
-
-const getMedia = async () => {
-	const constraints = { audio: true, video: true };
-
-	try {
-		return await navigator.mediaDevices.getUserMedia(constraints);
-		/* ストリームを使用 */
-	} catch (err) {
-		/* エラーを処理 */
-		console.error(err);
-	}
-};
-
-getMedia();
+import { VideoArea } from './VideoArea';
 
 export const App: React.FC = () => {
-	const [localPeerName, setLocalPeerName] = useState('');
-	const [remotePeerName, setRemotePeerName] = useState('');
+	const rtcClient = useRtcClient();
 
 	return (
 		<>
-			{!localPeerName ? (
-				<InputNameForm label="あなたの名前" setPeerName={setLocalPeerName} />
-			) : !remotePeerName ? (
-				<InputNameForm label="相手の名前" setPeerName={setRemotePeerName} />
-			) : (
-				<div>Hello!</div>
-			)}
+			{rtcClient &&
+				(!rtcClient.localPeerName ? (
+					<InputNameForm isLocal={true} rtcClient={rtcClient} />
+				) : !rtcClient.remotePeerName ? (
+					<InputNameForm isLocal={false} rtcClient={rtcClient} />
+				) : (
+					<VideoArea rtcClient={rtcClient} />
+				))}
 		</>
 	);
 };
