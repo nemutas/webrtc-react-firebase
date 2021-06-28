@@ -1,8 +1,11 @@
+import { FirebaseSignallingClient } from './firebaseSignallingClient';
+
 // RTCPeerConnectionのインスタンス実装例：https://developer.mozilla.org/en-US/docs/Web/API/RTCIceServer/urls
 // 公開されているStunServer：http://www.stunprotocol.org/
 export class RTCClient {
 	rtcPeerConection;
 	mediaStream: MediaStream | null;
+	private _firebaseSignallingClient;
 	private _localPeerName;
 	private _remotePeerName;
 
@@ -11,9 +14,8 @@ export class RTCClient {
 			iceServers: [{ urls: 'stun:stun.stunprotocol.org' }]
 		};
 		this.rtcPeerConection = new RTCPeerConnection(config);
-
+		this._firebaseSignallingClient = new FirebaseSignallingClient();
 		this.mediaStream = null;
-
 		this._localPeerName = '';
 		this._remotePeerName = '';
 	}
@@ -52,6 +54,9 @@ export class RTCClient {
 	startListening(localPeerName: string) {
 		this._localPeerName = localPeerName;
 		this.setRtcClient();
-		// TODO: ここにシグナリングサーバーをリスンする処理を追加する
+
+		this._firebaseSignallingClient.database.ref(localPeerName).on('value', snapshot => {
+			const data = snapshot.val();
+		});
 	}
 }
