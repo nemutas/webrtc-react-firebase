@@ -20,7 +20,7 @@ export const InputNameForm: React.FC<InputNameFormPropsType> = props => {
 		if (isLocal) {
 			rtcClient.startListening(name.trim());
 		} else {
-			rtcClient.remotePeerName = name.trim();
+			rtcClient.connect(name.trim());
 		}
 		setName('');
 	};

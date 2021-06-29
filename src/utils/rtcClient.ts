@@ -4,7 +4,7 @@
 import { FirebaseSignallingClient } from './firebaseSignallingClient';
 
 export class RTCClient {
-	rtcPeerConection;
+	rtcPeerConnection;
 	mediaStream: MediaStream | null;
 	private _firebaseSignallingClient;
 	private _localPeerName;
@@ -17,7 +17,7 @@ export class RTCClient {
 		const config = {
 			iceServers: [{ urls: 'stun:stun.stunprotocol.org' }]
 		};
-		this.rtcPeerConection = new RTCPeerConnection(config);
+		this.rtcPeerConnection = new RTCPeerConnection(config);
 		this._firebaseSignallingClient = new FirebaseSignallingClient();
 		this.mediaStream = null;
 		this._localPeerName = '';
@@ -42,6 +42,9 @@ export class RTCClient {
 		this.setRtcClient();
 	}
 
+	/**
+	 * インスタンスの状態を更新する（再renderされる）
+	 */
 	private setRtcClient() {
 		this._setRtcCliant(this);
 	}
@@ -72,13 +75,13 @@ export class RTCClient {
 
 	private addAudioTrack() {
 		if (this.mediaStream) {
-			this.rtcPeerConection.addTrack(this.audioTrack!, this.mediaStream);
+			this.rtcPeerConnection.addTrack(this.audioTrack!, this.mediaStream);
 		}
 	}
 
 	private addVideoTrack() {
 		if (this.mediaStream) {
-			this.rtcPeerConection.addTrack(this.videoTrack!, this.mediaStream);
+			this.rtcPeerConnection.addTrack(this.videoTrack!, this.mediaStream);
 		}
 	}
 
@@ -88,6 +91,48 @@ export class RTCClient {
 
 	private get videoTrack() {
 		return this.mediaStream?.getVideoTracks()[0];
+	}
+
+	// -----------------------------------------
+	/**
+	 * remote（相手側）に接続する
+	 * @param remotePeerName 相手の名前
+	 */
+	connect(remotePeerName: string) {
+		this._remotePeerName = remotePeerName;
+		this.setOnicecandidateCallback();
+		this.setOntrack();
+		this.setRtcClient();
+	}
+
+	/**
+	 * 通信経路をremoteへ渡す
+	 * https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/onicecandidate
+	 */
+	private setOnicecandidateCallback() {
+		this.rtcPeerConnection.onicecandidate = event => {
+			if (event.candidate) {
+				console.log({ candidate: event.candidate });
+				// TODO: remoteへcandidateを通知する
+			}
+		};
+	}
+
+	/**
+	 * remoteのMediaStreamを監視、取得する
+	 * https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/ontrack
+	 */
+	private setOntrack() {
+		this.rtcPeerConnection.ontrack = rtcTrackEvent => {
+			if (rtcTrackEvent.track.kind !== 'video') return;
+			if (!this.remoteVideoRef.current) return;
+
+			const remoteMediaStream = rtcTrackEvent.streams[0];
+			this.remoteVideoRef.current.srcObject = remoteMediaStream;
+			this.setRtcClient();
+		};
+
+		this.setRtcClient();
 	}
 
 	// -----------------------------------------
