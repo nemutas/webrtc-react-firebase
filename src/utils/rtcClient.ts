@@ -1,7 +1,8 @@
-import { FirebaseSignallingClient } from './firebaseSignallingClient';
-
 // RTCPeerConnectionのインスタンス実装例：https://developer.mozilla.org/en-US/docs/Web/API/RTCIceServer/urls
 // 公開されているStunServer：http://www.stunprotocol.org/
+
+import { FirebaseSignallingClient } from './firebaseSignallingClient';
+
 export class RTCClient {
 	rtcPeerConection;
 	mediaStream: MediaStream | null;
@@ -9,7 +10,10 @@ export class RTCClient {
 	private _localPeerName;
 	private _remotePeerName;
 
-	constructor(private _setRtcCliant: (rtcClient: RTCClient) => void) {
+	constructor(
+		public remoteVideoRef: React.RefObject<HTMLVideoElement>,
+		private _setRtcCliant: (rtcClient: RTCClient) => void
+	) {
 		const config = {
 			iceServers: [{ urls: 'stun:stun.stunprotocol.org' }]
 		};
@@ -38,11 +42,11 @@ export class RTCClient {
 		this.setRtcClient();
 	}
 
-	setRtcClient() {
+	private setRtcClient() {
 		this._setRtcCliant(this);
 	}
 
-	async getUserMedia() {
+	private async getUserMedia() {
 		try {
 			const constraints = { audio: true, video: true };
 			this.mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -51,6 +55,46 @@ export class RTCClient {
 		}
 	}
 
+	async setMediaStream() {
+		await this.getUserMedia();
+		this.addTracks();
+		this.setRtcClient();
+	}
+
+	// -----------------------------------------
+	// Trackの追加
+	// https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addTrack
+
+	private addTracks() {
+		this.addAudioTrack();
+		this.addVideoTrack();
+	}
+
+	private addAudioTrack() {
+		if (this.mediaStream) {
+			this.rtcPeerConection.addTrack(this.audioTrack!, this.mediaStream);
+		}
+	}
+
+	private addVideoTrack() {
+		if (this.mediaStream) {
+			this.rtcPeerConection.addTrack(this.videoTrack!, this.mediaStream);
+		}
+	}
+
+	private get audioTrack() {
+		return this.mediaStream?.getAudioTracks()[0];
+	}
+
+	private get videoTrack() {
+		return this.mediaStream?.getVideoTracks()[0];
+	}
+
+	// -----------------------------------------
+	/**
+	 * リスニングサーバー（firebase rtd）への接続
+	 * @param localPeerName 自分の名前
+	 */
 	startListening(localPeerName: string) {
 		this._localPeerName = localPeerName;
 		this.setRtcClient();
