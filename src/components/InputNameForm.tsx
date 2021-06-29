@@ -18,7 +18,7 @@ export const InputNameForm: React.FC<InputNameFormPropsType> = props => {
 	const onClickSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		e.preventDefault();
 		if (isLocal) {
-			rtcClient.startListening(name.trim());
+			await rtcClient.startListening(name.trim());
 		} else {
 			await rtcClient.connect(name.trim());
 		}

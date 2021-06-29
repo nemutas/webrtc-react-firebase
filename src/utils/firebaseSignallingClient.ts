@@ -48,4 +48,9 @@ export class FirebaseSignallingClient {
 			sessionDescription
 		});
 	}
+
+	// https://firebase.google.com/docs/database/web/read-and-write#delete_data
+	async remove(path: string) {
+		await this.database.ref(path).remove();
+	}
 }

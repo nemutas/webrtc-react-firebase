@@ -191,14 +191,24 @@ export class RTCClient {
 		await this._firebaseSignallingClient.sendAnswer(this.localDescription);
 	}
 
+	private async saveReceivedSessionDescription(sessionDescription: RTCSessionDescriptionType) {
+		try {
+			await this.setRemoteDecription(sessionDescription);
+		} catch (e) {
+			console.error(e);
+		}
+	}
+
 	// =================================================
 	/**
 	 * リスニングサーバー（firebase RTDB）への接続
 	 * @param localPeerName 自分の名前
 	 */
-	startListening(localPeerName: string) {
+	async startListening(localPeerName: string) {
 		this._localPeerName = localPeerName;
 		this.setRtcClient();
+
+		await this._firebaseSignallingClient.remove(localPeerName);
 
 		this._firebaseSignallingClient.database.ref(localPeerName).on('value', async snapshot => {
 			const data = snapshot.val() as SignallingDataType | null;
@@ -208,6 +218,9 @@ export class RTCClient {
 				case 'offer':
 					// offerを受け取ったらanswerを返す
 					await this.answer(data.sender, data.sessionDescription!);
+					break;
+				case 'answer':
+					await this.saveReceivedSessionDescription(data.sessionDescription!);
 					break;
 				default:
 					break;
