@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { RTCClient } from '../utils/rtcClient';
 import { Video } from './Video';
 
