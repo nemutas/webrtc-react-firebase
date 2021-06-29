@@ -1,10 +1,11 @@
 import 'firebase/database';
 import firebase from 'firebase/app';
+import { RTCSessionDescriptionType } from './types';
 
 export class FirebaseSignallingClient {
 	database;
 	localPeerName;
-	RemotePeerName;
+	remotePeerName;
 
 	constructor() {
 		const firebaseConfig = {
@@ -19,6 +20,24 @@ export class FirebaseSignallingClient {
 		if (firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
 		this.database = firebase.database();
 		this.localPeerName = '';
-		this.RemotePeerName = '';
+		this.remotePeerName = '';
+	}
+
+	setPeerNames(localPeerName: string, remotePeerName: string) {
+		this.localPeerName = localPeerName;
+		this.remotePeerName = remotePeerName;
+	}
+
+	get targetRef() {
+		return this.database.ref(this.remotePeerName);
+	}
+
+	// https://firebase.google.com/docs/database/admin/save-data?hl=ja#node.js_1
+	async sendOffer(sessionDescription: RTCSessionDescriptionType) {
+		await this.targetRef.set({
+			type: 'offer',
+			sender: this.localPeerName,
+			sessionDescription
+		});
 	}
 }

@@ -15,12 +15,12 @@ export const InputNameForm: React.FC<InputNameFormPropsType> = props => {
 	const [name, setName] = useState('');
 	const label = isLocal ? 'あなたの名前' : '相手の名前';
 
-	const onClickSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+	const onClickSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		e.preventDefault();
 		if (isLocal) {
 			rtcClient.startListening(name.trim());
 		} else {
-			rtcClient.connect(name.trim());
+			await rtcClient.connect(name.trim());
 		}
 		setName('');
 	};

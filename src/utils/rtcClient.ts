@@ -2,9 +2,10 @@
 // 公開されているStunServer：http://www.stunprotocol.org/
 
 import { FirebaseSignallingClient } from './firebaseSignallingClient';
+import { RTCSessionDescriptionType } from './types';
 
 export class RTCClient {
-	rtcPeerConnection;
+	private _rtcPeerConnection;
 	mediaStream: MediaStream | null;
 	private _firebaseSignallingClient;
 	private _localPeerName;
@@ -17,7 +18,7 @@ export class RTCClient {
 		const config = {
 			iceServers: [{ urls: 'stun:stun.stunprotocol.org' }]
 		};
-		this.rtcPeerConnection = new RTCPeerConnection(config);
+		this._rtcPeerConnection = new RTCPeerConnection(config);
 		this._firebaseSignallingClient = new FirebaseSignallingClient();
 		this.mediaStream = null;
 		this._localPeerName = '';
@@ -28,18 +29,8 @@ export class RTCClient {
 		return this._localPeerName;
 	}
 
-	set localPeerName(name: string) {
-		this._localPeerName = name;
-		this.setRtcClient();
-	}
-
 	get remotePeerName() {
 		return this._remotePeerName;
-	}
-
-	set remotePeerName(name: string) {
-		this._remotePeerName = name;
-		this.setRtcClient();
 	}
 
 	/**
@@ -75,13 +66,13 @@ export class RTCClient {
 
 	private addAudioTrack() {
 		if (this.mediaStream) {
-			this.rtcPeerConnection.addTrack(this.audioTrack!, this.mediaStream);
+			this._rtcPeerConnection.addTrack(this.audioTrack!, this.mediaStream);
 		}
 	}
 
 	private addVideoTrack() {
 		if (this.mediaStream) {
-			this.rtcPeerConnection.addTrack(this.videoTrack!, this.mediaStream);
+			this._rtcPeerConnection.addTrack(this.videoTrack!, this.mediaStream);
 		}
 	}
 
@@ -98,11 +89,17 @@ export class RTCClient {
 	 * remote（相手側）に接続する
 	 * @param remotePeerName 相手の名前
 	 */
-	connect(remotePeerName: string) {
+	async connect(remotePeerName: string) {
 		this._remotePeerName = remotePeerName;
 		this.setOnicecandidateCallback();
 		this.setOntrack();
+		await this.offer();
 		this.setRtcClient();
+	}
+
+	// https://developer.mozilla.org/en-US/docs/Web/API/RTCSessionDescription/toJSON
+	get localDescription() {
+		return this._rtcPeerConnection.localDescription?.toJSON() as RTCSessionDescriptionType;
 	}
 
 	/**
@@ -110,7 +107,7 @@ export class RTCClient {
 	 * https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/onicecandidate
 	 */
 	private setOnicecandidateCallback() {
-		this.rtcPeerConnection.onicecandidate = event => {
+		this._rtcPeerConnection.onicecandidate = event => {
 			if (event.candidate) {
 				console.log({ candidate: event.candidate });
 				// TODO: remoteへcandidateを通知する
@@ -123,7 +120,7 @@ export class RTCClient {
 	 * https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/ontrack
 	 */
 	private setOntrack() {
-		this.rtcPeerConnection.ontrack = rtcTrackEvent => {
+		this._rtcPeerConnection.ontrack = rtcTrackEvent => {
 			if (rtcTrackEvent.track.kind !== 'video') return;
 			if (!this.remoteVideoRef.current) return;
 
@@ -135,9 +132,40 @@ export class RTCClient {
 		this.setRtcClient();
 	}
 
+	/**
+	 * シグナリングサーバー（firebase RTDB）経由で、remoteにofferを送信する
+	 * https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createOffer
+	 */
+	private async offer() {
+		const sessionDescription = await this.createOffer();
+		await this.setLocalDescription(sessionDescription);
+		await this.sendOffer();
+	}
+
+	private async createOffer() {
+		try {
+			return await this._rtcPeerConnection.createOffer();
+		} catch (e) {
+			console.error(e);
+		}
+	}
+
+	private async setLocalDescription(sessionDescription: RTCSessionDescriptionInit | undefined) {
+		try {
+			await this._rtcPeerConnection.setLocalDescription(sessionDescription);
+		} catch (e) {
+			console.error(e);
+		}
+	}
+
+	private async sendOffer() {
+		this._firebaseSignallingClient.setPeerNames(this._localPeerName, this._remotePeerName);
+		await this._firebaseSignallingClient.sendOffer(this.localDescription);
+	}
+
 	// -----------------------------------------
 	/**
-	 * リスニングサーバー（firebase rtd）への接続
+	 * リスニングサーバー（firebase RTDB）への接続
 	 * @param localPeerName 自分の名前
 	 */
 	startListening(localPeerName: string) {
