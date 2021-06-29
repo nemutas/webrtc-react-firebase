@@ -40,4 +40,12 @@ export class FirebaseSignallingClient {
 			sessionDescription
 		});
 	}
+
+	async sendAnswer(sessionDescription: RTCSessionDescriptionType) {
+		await this.targetRef.set({
+			type: 'answer',
+			sender: this.localPeerName,
+			sessionDescription
+		});
+	}
 }

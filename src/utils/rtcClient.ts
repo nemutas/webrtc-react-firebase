@@ -2,7 +2,7 @@
 // 公開されているStunServer：http://www.stunprotocol.org/
 
 import { FirebaseSignallingClient } from './firebaseSignallingClient';
-import { RTCSessionDescriptionType } from './types';
+import { RTCSessionDescriptionType, SignallingDataType } from './types';
 
 export class RTCClient {
 	private _rtcPeerConnection;
@@ -55,7 +55,7 @@ export class RTCClient {
 		this.setRtcClient();
 	}
 
-	// -----------------------------------------
+	// =================================================
 	// Trackの追加
 	// https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addTrack
 
@@ -84,7 +84,7 @@ export class RTCClient {
 		return this.mediaStream?.getVideoTracks()[0];
 	}
 
-	// -----------------------------------------
+	// =================================================
 	/**
 	 * remote（相手側）に接続する
 	 * @param remotePeerName 相手の名前
@@ -163,7 +163,35 @@ export class RTCClient {
 		await this._firebaseSignallingClient.sendOffer(this.localDescription);
 	}
 
-	// -----------------------------------------
+	// -------------------------------------------------
+
+	// https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createAnswer
+	private async answer(sender: string, sessionDescription: RTCSessionDescriptionType) {
+		try {
+			this._remotePeerName = sender;
+			this.setOnicecandidateCallback();
+			this.setOntrack();
+			await this.setRemoteDecription(sessionDescription);
+			const answer = await this._rtcPeerConnection.createAnswer();
+			await this._rtcPeerConnection.setLocalDescription(answer);
+			await this.sendAnswer();
+		} catch (e) {
+			console.error(e);
+		}
+	}
+
+	private async setRemoteDecription(sessionDescription: RTCSessionDescriptionType) {
+		await this._rtcPeerConnection.setRemoteDescription(
+			sessionDescription as RTCSessionDescriptionInit
+		);
+	}
+
+	private async sendAnswer() {
+		this._firebaseSignallingClient.setPeerNames(this._localPeerName, this._remotePeerName);
+		await this._firebaseSignallingClient.sendAnswer(this.localDescription);
+	}
+
+	// =================================================
 	/**
 	 * リスニングサーバー（firebase RTDB）への接続
 	 * @param localPeerName 自分の名前
@@ -172,8 +200,18 @@ export class RTCClient {
 		this._localPeerName = localPeerName;
 		this.setRtcClient();
 
-		this._firebaseSignallingClient.database.ref(localPeerName).on('value', snapshot => {
-			const data = snapshot.val();
+		this._firebaseSignallingClient.database.ref(localPeerName).on('value', async snapshot => {
+			const data = snapshot.val() as SignallingDataType | null;
+			if (!data) return;
+
+			switch (data.type) {
+				case 'offer':
+					// offerを受け取ったらanswerを返す
+					await this.answer(data.sender, data.sessionDescription!);
+					break;
+				default:
+					break;
+			}
 		});
 	}
 }
