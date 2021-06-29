@@ -7,7 +7,8 @@ type VideoRemotePropsType = {
 };
 
 export const VideoRemote: React.FC<VideoRemotePropsType> = ({ rtcClient }) => {
-	const videoRef = useRef<HTMLVideoElement>(null);
+	// TODO: videoRef は、rtcClientに持たせる
+	const videoRef = rtcClient.remoteVideoRef;
 
 	return <Video isMuted={false} name={rtcClient.remotePeerName} videoRef={videoRef} />;
 };

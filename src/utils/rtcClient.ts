@@ -10,7 +10,10 @@ export class RTCClient {
 	private _localPeerName;
 	private _remotePeerName;
 
-	constructor(private _setRtcCliant: (rtcClient: RTCClient) => void) {
+	constructor(
+		public remoteVideoRef: React.RefObject<HTMLVideoElement>,
+		private _setRtcCliant: (rtcClient: RTCClient) => void
+	) {
 		const config = {
 			iceServers: [{ urls: 'stun:stun.stunprotocol.org' }]
 		};
