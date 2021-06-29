@@ -7,5 +7,6 @@ export type RTCSessionDescriptionType = {
 export type SignallingDataType = {
 	sender: string;
 	sessionDescription?: RTCSessionDescriptionType;
+	candidate?: RTCIceCandidateInit;
 	type: 'offer' | 'answer' | 'candidate';
 };

@@ -103,14 +103,27 @@ export class RTCClient {
 	}
 
 	/**
-	 * 通信経路をremoteへ渡す
+	 * シグナリングサーバー（firebase RTDB）から動的に取得されたremoteの通信経路（candidate）を追加する
+	 * https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addIceCandidate
+	 * @param candidate
+	 */
+	private async addIceCandidate(candidate: RTCIceCandidateInit) {
+		try {
+			const iceCandidate = new RTCIceCandidate(candidate);
+			await this._rtcPeerConnection.addIceCandidate(iceCandidate);
+		} catch (e) {
+			console.error(e);
+		}
+	}
+
+	/**
+	 * 通信経路をシグナリングサーバー（firebase RTDB）を介して、remoteへ渡す
 	 * https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/onicecandidate
 	 */
 	private setOnicecandidateCallback() {
-		this._rtcPeerConnection.onicecandidate = event => {
-			if (event.candidate) {
-				console.log({ candidate: event.candidate });
-				// TODO: remoteへcandidateを通知する
+		this._rtcPeerConnection.onicecandidate = async ({ candidate }) => {
+			if (candidate) {
+				await this._firebaseSignallingClient.sendCandidate(candidate.toJSON());
 			}
 		};
 	}
@@ -201,7 +214,7 @@ export class RTCClient {
 
 	// =================================================
 	/**
-	 * リスニングサーバー（firebase RTDB）への接続
+	 * シグナリングサーバー（firebase RTDB）への接続
 	 * @param localPeerName 自分の名前
 	 */
 	async startListening(localPeerName: string) {
@@ -220,9 +233,15 @@ export class RTCClient {
 					await this.answer(data.sender, data.sessionDescription!);
 					break;
 				case 'answer':
+					// 受け取ったanswerを保存する
 					await this.saveReceivedSessionDescription(data.sessionDescription!);
 					break;
+				case 'candidate':
+					// 受け取った通信経路（candidate）を追加する
+					await this.addIceCandidate(data.candidate!);
+					break;
 				default:
+					this.setRtcClient();
 					break;
 			}
 		});

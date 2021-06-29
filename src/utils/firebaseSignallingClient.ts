@@ -49,6 +49,14 @@ export class FirebaseSignallingClient {
 		});
 	}
 
+	async sendCandidate(candidate: RTCIceCandidateInit) {
+		await this.targetRef.set({
+			type: 'candidate',
+			sender: this.localPeerName,
+			candidate
+		});
+	}
+
 	// https://firebase.google.com/docs/database/web/read-and-write#delete_data
 	async remove(path: string) {
 		await this.database.ref(path).remove();
