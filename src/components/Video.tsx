@@ -1,4 +1,8 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import {
+	Card, CardActionArea, CardActions, CardContent, makeStyles, Typography
+} from '@material-ui/core';
+import { useDimensions } from './hooks/useDimensions';
 
 type VideoPropsType = {
 	isMuted: boolean;
@@ -8,11 +12,27 @@ type VideoPropsType = {
 
 export const Video: React.FC<VideoPropsType> = props => {
 	const { isMuted, name, videoRef } = props;
+	const classes = useStyles();
+	const refCard = useRef(null);
+	const dimensionsCard = useDimensions(refCard);
 
 	return (
-		<>
-			<video autoPlay muted={isMuted} ref={videoRef} />
-			<div>{name}</div>
-		</>
+		<Card ref={refCard}>
+			<CardActionArea>
+				<video autoPlay muted={isMuted} ref={videoRef} width={dimensionsCard.width} />
+				<CardContent>
+					<Typography gutterBottom variant="h5" component="h2">
+						{name}
+					</Typography>
+				</CardContent>
+			</CardActionArea>
+			<CardActions></CardActions>
+		</Card>
 	);
 };
+
+const useStyles = makeStyles({
+	root: {
+		maxWidth: 345
+	}
+});
