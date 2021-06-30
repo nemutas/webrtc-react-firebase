@@ -16,10 +16,11 @@ type VideoPropsType = {
 
 export const Video: React.FC<VideoPropsType> = props => {
 	const { isLocal, name, rtcClient, videoRef } = props;
-	const classes = useStyles();
 	const [muted, setMuted] = useState(rtcClient.initialAudioMuted);
 	const refCard = useRef(null);
 	const dimensionsCard = useDimensions(refCard);
+	const refVolumeButton = useRef(null);
+	const dimensionsVolumeButton = useDimensions(refVolumeButton);
 
 	console.log({ isLocal, srcObject: videoRef.current?.srcObject });
 
@@ -34,17 +35,20 @@ export const Video: React.FC<VideoPropsType> = props => {
 				</CardContent>
 			</CardActionArea>
 			<CardActions>
-				<VolumeButton muted={muted} rtcClient={rtcClient} setMuted={setMuted} isLocal={isLocal} />
+				<VolumeButton
+					muted={muted}
+					rtcClient={rtcClient}
+					setMuted={setMuted}
+					isLocal={isLocal}
+					refVolumeButton={refVolumeButton}
+				/>
 				{!muted && videoRef.current && videoRef.current.srcObject && (
-					<AudioAnalyser audio={videoRef.current.srcObject} />
+					<AudioAnalyser
+						audio={videoRef.current.srcObject}
+						width={dimensionsCard.width - dimensionsVolumeButton.width - 40}
+					/>
 				)}
 			</CardActions>
 		</Card>
 	);
 };
-
-const useStyles = makeStyles({
-	root: {
-		maxWidth: 345
-	}
-});
