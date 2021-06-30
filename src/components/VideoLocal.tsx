@@ -17,5 +17,5 @@ export const VideoLocal: React.FC<VideoLocalPropsType> = ({ rtcClient }) => {
 		}
 	}, [mediaStream, videoRef]);
 
-	return <Video isMuted={true} name={rtcClient.localPeerName} videoRef={videoRef} />;
+	return <Video isLocal={true} name={rtcClient.localPeerName} videoRef={videoRef} />;
 };
