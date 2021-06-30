@@ -4,6 +4,7 @@ import {
 } from '@material-ui/core';
 import { RTCClient } from '../utils/rtcClient';
 import { useDimensions } from './hooks/useDimensions';
+import AudioAnalyser from './libs/AudioAnalyser';
 import { VolumeButton } from './VolumeButton';
 
 type VideoPropsType = {
@@ -20,6 +21,8 @@ export const Video: React.FC<VideoPropsType> = props => {
 	const refCard = useRef(null);
 	const dimensionsCard = useDimensions(refCard);
 
+	console.log({ isLocal, srcObject: videoRef.current?.srcObject });
+
 	return (
 		<Card ref={refCard}>
 			<CardActionArea>
@@ -32,6 +35,9 @@ export const Video: React.FC<VideoPropsType> = props => {
 			</CardActionArea>
 			<CardActions>
 				<VolumeButton muted={muted} rtcClient={rtcClient} setMuted={setMuted} isLocal={isLocal} />
+				{!muted && videoRef.current && videoRef.current.srcObject && (
+					<AudioAnalyser audio={videoRef.current.srcObject} />
+				)}
 			</CardActions>
 		</Card>
 	);
