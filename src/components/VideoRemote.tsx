@@ -9,5 +9,12 @@ type VideoRemotePropsType = {
 export const VideoRemote: React.FC<VideoRemotePropsType> = ({ rtcClient }) => {
 	const videoRef = rtcClient.remoteVideoRef;
 
-	return <Video isLocal={false} name={rtcClient.remotePeerName} videoRef={videoRef} />;
+	return (
+		<Video
+			isLocal={false}
+			name={rtcClient.remotePeerName}
+			rtcClient={rtcClient}
+			videoRef={videoRef}
+		/>
+	);
 };

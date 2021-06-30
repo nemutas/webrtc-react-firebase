@@ -2,21 +2,27 @@ import React, { useRef, useState } from 'react';
 import {
 	Card, CardActionArea, CardActions, CardContent, makeStyles, Typography
 } from '@material-ui/core';
+import { RTCClient } from '../utils/rtcClient';
 import { useDimensions } from './hooks/useDimensions';
+import AudioAnalyser from './libs/AudioAnalyser';
 import { VolumeButton } from './VolumeButton';
 
 type VideoPropsType = {
 	isLocal: boolean;
 	name: string;
+	rtcClient: RTCClient;
 	videoRef: React.RefObject<HTMLVideoElement>;
 };
 
 export const Video: React.FC<VideoPropsType> = props => {
-	const { isLocal, name, videoRef } = props;
-	const classes = useStyles();
-	const [muted, setMuted] = useState(true);
+	const { isLocal, name, rtcClient, videoRef } = props;
+	const [muted, setMuted] = useState(rtcClient.initialAudioMuted);
 	const refCard = useRef(null);
 	const dimensionsCard = useDimensions(refCard);
+	const refVolumeButton = useRef(null);
+	const dimensionsVolumeButton = useDimensions(refVolumeButton);
+
+	console.log({ isLocal, srcObject: videoRef.current?.srcObject });
 
 	return (
 		<Card ref={refCard}>
@@ -29,14 +35,20 @@ export const Video: React.FC<VideoPropsType> = props => {
 				</CardContent>
 			</CardActionArea>
 			<CardActions>
-				<VolumeButton muted={muted} setMuted={setMuted} />
+				<VolumeButton
+					muted={muted}
+					rtcClient={rtcClient}
+					setMuted={setMuted}
+					isLocal={isLocal}
+					refVolumeButton={refVolumeButton}
+				/>
+				{!muted && videoRef.current && videoRef.current.srcObject && (
+					<AudioAnalyser
+						audio={videoRef.current.srcObject}
+						width={dimensionsCard.width - dimensionsVolumeButton.width - 40}
+					/>
+				)}
 			</CardActions>
 		</Card>
 	);
 };
-
-const useStyles = makeStyles({
-	root: {
-		maxWidth: 345
-	}
-});
