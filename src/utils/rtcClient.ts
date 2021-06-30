@@ -4,6 +4,8 @@
 import { FirebaseSignallingClient } from './firebaseSignallingClient';
 import { RTCSessionDescriptionType, SignallingDataType } from './types';
 
+const INITIAL_AUDIO_ENABLED = false;
+
 export class RTCClient {
 	private _rtcPeerConnection;
 	mediaStream: MediaStream | null;
@@ -23,6 +25,10 @@ export class RTCClient {
 		this.mediaStream = null;
 		this._localPeerName = '';
 		this._remotePeerName = '';
+	}
+
+	get initialAudioMuted() {
+		return !INITIAL_AUDIO_ENABLED;
 	}
 
 	get localPeerName() {
@@ -65,23 +71,31 @@ export class RTCClient {
 	}
 
 	private addAudioTrack() {
-		if (this.mediaStream) {
-			this._rtcPeerConnection.addTrack(this.audioTrack!, this.mediaStream);
-		}
+		if (!this.mediaStream) return;
+
+		this.audioTrack.enabled = INITIAL_AUDIO_ENABLED;
+		this._rtcPeerConnection.addTrack(this.audioTrack, this.mediaStream);
 	}
 
 	private addVideoTrack() {
-		if (this.mediaStream) {
-			this._rtcPeerConnection.addTrack(this.videoTrack!, this.mediaStream);
-		}
+		if (!this.mediaStream) return;
+
+		this._rtcPeerConnection.addTrack(this.videoTrack, this.mediaStream);
 	}
 
 	private get audioTrack() {
-		return this.mediaStream?.getAudioTracks()[0];
+		return this.mediaStream!.getAudioTracks()[0];
 	}
 
 	private get videoTrack() {
-		return this.mediaStream?.getVideoTracks()[0];
+		return this.mediaStream!.getVideoTracks()[0];
+	}
+
+	toggleAudio() {
+		if (!this.mediaStream) return;
+
+		this.audioTrack.enabled = !this.audioTrack.enabled;
+		this.setRtcClient();
 	}
 
 	// =================================================
