@@ -1,6 +1,6 @@
 import React from 'react';
 import Grid from '@material-ui/core/Grid';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import { RTCClient } from '../utils/rtcClient';
 import { VideoLocal } from './VideoLocal';
 import { VideoRemote } from './VideoRemote';
@@ -26,10 +26,8 @@ export const VideoArea: React.FC<VideoAreaPropsType> = ({ rtcClient }) => {
 	);
 };
 
-const useStyles = makeStyles((theme: Theme) =>
-	createStyles({
-		root: {
-			flexGrow: 1
-		}
-	})
-);
+const useStyles = makeStyles({
+	root: {
+		flexGrow: 1
+	}
+});
