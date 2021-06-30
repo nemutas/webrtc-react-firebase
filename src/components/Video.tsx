@@ -1,7 +1,5 @@
 import React, { useRef, useState } from 'react';
-import {
-	Card, CardActionArea, CardActions, CardContent, makeStyles, Typography
-} from '@material-ui/core';
+import { Card, CardActionArea, CardActions, CardContent, Typography } from '@material-ui/core';
 import { RTCClient } from '../utils/rtcClient';
 import { useDimensions } from './hooks/useDimensions';
 import AudioAnalyser from './libs/AudioAnalyser';
@@ -21,8 +19,6 @@ export const Video: React.FC<VideoPropsType> = props => {
 	const dimensionsCard = useDimensions(refCard);
 	const refVolumeButton = useRef(null);
 	const dimensionsVolumeButton = useDimensions(refVolumeButton);
-
-	console.log({ isLocal, srcObject: videoRef.current?.srcObject });
 
 	return (
 		<Card ref={refCard}>
