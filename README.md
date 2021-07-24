@@ -12,3 +12,6 @@ https://nemutas-webrtc-react.web.app/
 
 # アーキテクチャ
 ![webrtc](https://user-images.githubusercontent.com/46724121/124071802-e2bf8680-da7a-11eb-80a6-e42ea27293cb.png)
+
+# 参考
+- [WebRTCの基本とP2P通信が成立するまでを学ぶ](https://qiita.com/daitasu/items/ae21b16361eb9f65ed43)
